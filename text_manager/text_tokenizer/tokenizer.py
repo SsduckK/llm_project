@@ -25,15 +25,15 @@ def create_word_database(word_token):
 
 
 class Tokenizer:
-    def __init__(self, word_db):
+    def __init__(self, word_db, model="gpt2"):
         self.str_to_int = word_db
-        self.int_to_str = {i:s for s, i in word_db.items()}
-        self.tokenizer = tiktoken.get_encoding("gpt2")
+        self.int_to_str = {i: s for s, i in word_db.items()}
+        self.tokenizer = tiktoken.get_encoding(model)
 
     def encode(self, text):
         integers = self.tokenizer.encode(text, allowed_special={"<|endoftext|>"})
         return integers
-        
+
     def decode(self, integers):
         string = self.tokenizer.decode(integers)
         return string
