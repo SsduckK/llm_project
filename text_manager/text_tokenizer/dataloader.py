@@ -28,17 +28,11 @@ class GPTDataset(Dataset):
         return self.input_ids[index], self.target_ids[index]
 
 
-def create_embedding_layer(word_database_size, context_size, output_dim):
-    token_embedding_layer = torch.nn.Embedding(word_database_size, output_dim)
-    position_embedding_layer = torch.nn.Embedding(context_size, output_dim)
-    position_embedding = position_embedding_layer(torch.arange(context_size))
-    return token_embedding_layer, position_embedding
-
-
 class LanguageDataLoader:
     def __init__(
         self,
-        text_path,
+        string_data,
+        word_data_base,
         batch_size=4,
         max_length=256,
         stride=128,
@@ -46,8 +40,8 @@ class LanguageDataLoader:
         drop_last=True,
         num_workers=0,
     ):
-        self.text_data = self.load_file(text_path)
-        self.word_database = self.create_word_database(self.text_data)
+        self.text_data = string_data
+        self.word_database = word_data_base
         self.tokenizer = self.create_tokenizer(self.word_database)
         self.dataset = self.create_dataset(
             self.text_data, self.tokenizer, max_length, stride
@@ -59,12 +53,6 @@ class LanguageDataLoader:
     def load_file(self, path):
         data = file_loader(path)
         return data
-
-    def create_word_database(self, string_data):
-        split_data = split_string(string_data)
-        word_database = create_word_database(split_data)
-
-        return word_database
 
     def create_tokenizer(self, word_database):
         tokenizer = Tokenizer(word_database)
@@ -96,10 +84,21 @@ class LanguageDataLoader:
         return len(self.dataloader)
 
 
+def create_embedding_layer(word_database_size, context_size, output_dim):
+    token_embedding_layer = torch.nn.Embedding(word_database_size, output_dim)
+    position_embedding_layer = torch.nn.Embedding(context_size, output_dim)
+    position_embedding = position_embedding_layer(torch.arange(context_size))
+    return token_embedding_layer, position_embedding
+
+
 def main():
     file_data = "./the_verdict.txt"
+    string_data = file_loader(file_data)
+    split_data = split_string(string_data)
 
-    dataloader_class = LanguageDataLoader(file_data)
+    word_database = create_word_database(split_data)
+
+    dataloader_class = LanguageDataLoader(string_data, word_database)
     dataloader = dataloader_class.get_dataloader()
     data_iter = iter(dataloader)
     first_batch = next(data_iter)
