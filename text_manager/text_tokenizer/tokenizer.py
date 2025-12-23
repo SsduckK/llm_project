@@ -38,6 +38,9 @@ class Tokenizer:
         string = self.tokenizer.decode(integers)
         return string
 
+    def __len__(self):
+        return self.tokenizer.n_vocab
+
 
 def main():
     data_path = "./the_verdict.txt"

@@ -83,6 +83,9 @@ class LanguageDataLoader:
     def __len__(self):
         return len(self.dataloader)
 
+    def get_word_db(self):
+        return self.tokenizer
+
 
 def create_embedding_layer(word_database_size, context_size, output_dim):
     token_embedding_layer = torch.nn.Embedding(word_database_size, output_dim)
@@ -93,16 +96,35 @@ def create_embedding_layer(word_database_size, context_size, output_dim):
 
 def main():
     file_data = "./the_verdict.txt"
+    max_length = 4
+    output_dim = 4
     string_data = file_loader(file_data)
     split_data = split_string(string_data)
 
     word_database = create_word_database(split_data)
 
-    dataloader_class = LanguageDataLoader(string_data, word_database)
+    dataloader_class = LanguageDataLoader(
+        string_data, word_database, max_length=max_length
+    )
     dataloader = dataloader_class.get_dataloader()
+    word_db = dataloader_class.get_word_db()
     data_iter = iter(dataloader)
-    first_batch = next(data_iter)
-    print(first_batch)
+    inputs, target = next(data_iter)
+
+    print(inputs)
+    print(target)
+    print("vocab_size =", len(word_db))
+    print("inputs min/max =", inputs.min().item(), inputs.max().item())
+
+    token_embedding_layer, position_embedding = create_embedding_layer(
+        len(word_db), max_length, output_dim=output_dim
+    )
+
+    token_embedding = token_embedding_layer(inputs)
+
+    input_embedding = token_embedding + position_embedding
+    print(input_embedding)
+    print(input_embedding.shape)
 
 
 if __name__ == "__main__":
