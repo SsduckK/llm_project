@@ -129,7 +129,7 @@ Pytorch Dataset 모듈 상속 받아 사용한다.
 사용할 tokenizer 로부터 입력 텍스트에 대한 token id를 create_token_id  함수를 통해 생성. 이를 self.token_id 에 저장한다.
 self.matching_input_target_ids 함수에서 token_id, max_length, stride 를 통해 입력 - 출력 순서쌍을 채운다.
 해당 함수는 sliding window 방식을 사용
-![[Pasted image 20251224015847.png]]
+![](./images/Pasted image 20251224015847.png)
 각 행은 길이 `max_length`의 입력 시퀀스와, 한 토큰 오른쪽으로 shift된 출력 시퀀스 쌍을 나타낸다.  
 stride=1인 sliding window 방식으로 학습 데이터를 생성한다.
 
@@ -215,8 +215,8 @@ def create_embedding_layer(word_database_size, context_size, output_dim):
 `position_embedding_layer = torch.nn.Embedding(context_size, output_dim)`은 시퀀스의 각 위치 인덱스(0 ~ context_size-1)에 대해 학습 가능한 위치 임베딩 벡터를 제공한다. `torch.arange(context_size)`로 위치 인덱스 텐서를 만든 뒤 이를 `position_embedding_layer`에 통과시키면 `(context_size, output_dim)` 형태의 위치 임베딩 행렬이 생성된다. 이 위치 임베딩은 토큰 임베딩과 동일한 차원(`output_dim`)을 가지므로, `token_embedding + position_embedding`처럼 더해 self-attention에 입력함으로써 모델이 어순(순서) 정보를 활용할 수 있게 된다. **포지션 임베딩은 단어 사전 크기(vocab_size)가 아니라 시퀀스 길이(context_size)에 의해 결정된다.**
 이렇게 생성된 position_embedding_layer 에 context_size 크기의 0부터 시작하는 torch tensor 를 넣으므로 context_size(max_length) 범위의 인덱스에 해당하는 포지션 벡터가 준비된다.
 이렇게 생성된 임베딩 정보 두 개를 반환한다.
-![[Pasted image 20251224022600.png]]
-![[Pasted image 20251224022607.png]]
+![](./images/Pasted image 20251224022600.png)
+![](./images/Pasted image 20251224022607.png)
 
 ```python
 def main():
