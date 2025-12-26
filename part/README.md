@@ -1,4 +1,4 @@
-## Text Manager
+## List
 
-- Text 처리 관련 파트
-- 토큰화
+- text tokenizer
+- attention
