@@ -15,21 +15,32 @@ SAMPLE_INPUT = torch.tensor(
 
 
 class SelfAttention(nn.Module):
-    def __init__(self, d_in, d_out, qkv_bias=False):
+    def __init__(self, d_in, d_out, context_length, dropout, qkv_bias=False):
         super().__init__()
+        self.d_out = d_out
         self.W_query = nn.Linear(d_in, d_out, bias=qkv_bias)
         self.W_key = nn.Linear(d_in, d_out, bias=qkv_bias)
         self.W_value = nn.Linear(d_in, d_out, bias=qkv_bias)
+        self.drop_out = nn.Dropout(dropout)
+        self.register_buffer(
+            "mask", torch.triu(torch.ones(context_length, context_length), diagonal=1)
+        )
 
     def forward(self, x):
+        print(x.shape)
+        b, num_tokens, d_in = x.shape
         keys = self.W_key(x)
         queries = self.W_query(x)
         values = self.W_value(x)
 
-        attention_scores = queries @ keys.T
+        attention_scores = queries @ keys.transpose(1, 2)
+        attention_scores.masked_fill_(
+            self.mask.bool()[:num_tokens, :num_tokens], -torch.inf
+        )
         attention_weight = torch.softmax(
             attention_scores / keys.shape[-1] ** 0.5, dim=-1
         )
+        attention_weight = self.drop_out(attention_weight)
 
         context_vec = attention_weight @ values
 
@@ -37,11 +48,13 @@ class SelfAttention(nn.Module):
 
 
 def main():
-    torch.manual_seed(789)
+    torch.manual_seed(123)
     d_in = 3
-    d_out = 2
-    self_attention_module = SelfAttention(d_in, d_out)
-    print(self_attention_module(SAMPLE_INPUT))
+    d_out = 3
+    batch = torch.stack((SAMPLE_INPUT, SAMPLE_INPUT), dim=0)
+    context_length = batch.shape[1]
+    self_attention_module = SelfAttention(d_in, d_out, context_length, 0.0)
+    print(self_attention_module(batch).shape)
 
 
 if __name__ == "__main__":
