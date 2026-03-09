@@ -1,5 +1,7 @@
 import torch
 import torch.nn as nn
+import config as cfg
+import tiktoken
 
 
 class BaseGPTModel(nn.Module):
@@ -40,3 +42,30 @@ class BaseLayerNorm(nn.Module):
 
     def forward(self, x):
         return x
+
+
+def test_model():
+    torch.manual_seed(123)
+
+    tokenizer = tiktoken.get_encoding("gpt2")
+    batch = []
+    txt1 = "Every effort moves you"
+    txt2 = "Every day holds a"
+
+    batch.append(torch.tensor(tokenizer.encode(txt1)))
+    batch.append(torch.tensor(tokenizer.encode(txt2)))
+
+    batch = torch.stack(batch, dim=0)
+
+    model = BaseGPTModel(cfg.GPT_CONFIG_124M)
+    logits = model(batch)
+    print("출력 크기 : ", logits.shape)
+    print(logits)
+
+
+def main():
+    test_model()
+
+
+if __name__ == "__main__":
+    main()
